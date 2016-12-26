@@ -14,7 +14,7 @@
 		* { margin: 0; padding: 0; }
 		body { overflow-x: hidden; background-color: #fff; }
 		#page_header, #page_body, #page_footer { position: relative; width: 100%; float: left; clear: both; }
-		#page_header { height: auto; background: #fff no-repeat; -moz-box-shadow: 0 6px 18px rgba(0,0,0,.68); -webkit-box-shadow: 0 6px 18px rgba(0,0,0,.68); box-shadow: 0 6px 18px rgba(0,0,0,.68); }
+		#page_header { overflow: hidden; background: #fff no-repeat; -moz-box-shadow: 0 6px 18px rgba(0,0,0,.68); -webkit-box-shadow: 0 6px 18px rgba(0,0,0,.68); box-shadow: 0 6px 18px rgba(0,0,0,.68); }
 		#page_header > img { display : block; } /* avoid gap between img and div */
 		#page_navi > div[class='naviElem'] { vertical-align: top; display: inline-block; margin: 3% 0 3% 8%; } 
 		.naviElem > img { width: 100%; height: auto; -moz-border-radius: 11px; -webkit-border-radius: 11px; border-radius: 11px; -moz-box-shadow: 0 5px 6px 0 rgba(0,0,0,.8); -webkit-box-shadow: 0 5px 6px 0 rgba(0,0,0,.8); box-shadow: 0 5px 6px 0 rgba(0,0,0,.8); }
@@ -76,16 +76,68 @@
  * 
  */
  var Template = (function() {
-	 return {
+	 var pHeader;
+	 return {		
 		init : function () {
-			// Determine the screen resolution
-			var scrW = window.screen.width;
-			var scrH = window.screen.height;
-			var imgSrc;
-			imgSrc = ( scrW >= 1360 && scrW <= 1366 && scrH == 768 ) /* 1360 x 768, 1366 x 768 */ ?
-						"assets/imgs/background/bgParis_1366x700.jpg" : "";
-			document.querySelectorAll("div#page_header > img")[0].src = imgSrc; 
-		}
+			pHeader = document.getElementById("page_header");
+			if ( !pHeader ) return;
+			
+			this.config();
+			this.fadeIn(1);
+		}, // init		
+		
+		config : function () {
+			/* Determine the screen resolution */
+			var scrW = window.screen.width, 
+				scrH = window.screen.height,
+				offset = 108, /* Int, scrH subtracts Bookmark and Address-bar */
+				strData = ""; /* String */
+				
+			pHeader.style.opacity = 0;
+			pHeader.filter = "opacity(alpha=0)";
+			
+			/* Set screen resolution
+			 * 1360 (1366) x 768 | 1280 x 720 | 1024 x 768 | 1024 x 576 | 960 x 540 | 800 x 600 | 
+			 */
+			if ( (scrW == 1360 || scrW == 1366) && scrH == 768 ) scrH -= offset;
+			strData = scrH + "px";
+			pHeader.style.height = strData;
+			strData = "assets/imgs/background/bgParis_" + scrW + "x" + scrH + ".jpg";
+			pHeader.querySelector("img").src = strData;
+			strData = null;
+		}, // config 
+		
+		fadeIn : function ( duration /* in second */ ) {
+			if ( duration < 1 ) return;
+			
+			var curOpac = 0, /* Int, current opacity */
+				strData = "", /* String */
+				delay = 32, /* Int, N * 60 fps => N * (1000 / 60) = N * 16 */
+				fadeId = null; /* Int, timer id */
+			var step = ( duration > 1 ) ? delay * duration : delay;
+			step = 1 / step;
+			
+			/* Start timer (animation) */
+			fadeId = window.setInterval( () => fn(), delay);
+			
+			/**
+			 * Helper function
+			 * @params
+			 */
+			function fn () {
+				if ( curOpac >= 1 ) {
+					pHeader.style.opacity = 1;
+					pHeader.style.filter = "alpha(opacity=100)";
+					strData = null;
+					clearInterval(fadeId);
+				}
+				curOpac += step;
+				strData = "" + curOpac;
+				pHeader.style.opacity = strData;
+				strData = "alpha(opacity=" + (100*curOpac) + ")";
+				pHeader.style.filter = strData;
+			}
+		} // fadeIn
 	 };
  })();
  
